@@ -253,7 +253,7 @@
         pageY = ev.clientY;
         tools.addEvent(document,'mousemove',fnMove)
         tools.addEvent(document,'mouseup',fnUp)
-        ev.preventDefault();
+        //ev.preventDefault();
      })
      
      function fnMove(ev){
@@ -301,8 +301,7 @@
 					tools.removeClass(checkedAll,"checked");
 				}            	
             })
-
-
+            ev.preventDefault();
         }
      }
      function fnUp(ev){
