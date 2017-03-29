@@ -1,6 +1,6 @@
 //准备文件区域的html模板
-function filesHtml(fileData){
-	var fileHtml = `
+function filesHtml1(fileData){
+	var fileHtml1 = `
            
             <div class="item" data-file-id="${fileData.id}">
                 <lable class="checkbox"></lable>
@@ -16,14 +16,38 @@ function filesHtml(fileData){
             </div>
         
 	`
-	return fileHtml;
+	return fileHtml1;
+}
+function filesHtml2(fileData){
+    var fileHtm2 = `
+           
+            <div class="item isPic" data-file-id="${fileData.id}">
+                <lable class="checkbox"></lable>
+                <div class="file-img">
+                    <strong><img src="${fileData.url}" alt=""></strong>
+                </div>
+                <p class="file-title-box">
+                    <span class="file-title">${fileData.title}</span>
+                    <span class="file-edtor">
+                        <input class="edtor" value="${fileData.title}" type="text"/>
+                    </span>
+                </p>
+            </div>
+        
+    `
+    return fileHtm2;
 }
 //返回指定id下所有子数据的html结构
 function createFilesHtml(data,id){
     var childs = dataControl.getChildById(data,id);
     var html = '';
     childs.forEach(function(item){
-         html += `<div class="file-item">${filesHtml(item)}</div>`
+         if(item.type.indexOf('image') == -1){
+            html += `<div class="file-item">${filesHtml1(item)}</div>`
+         }else{
+            html += `<div class="file-item">${filesHtml2(item)}</div>`
+         }
+         
     }) 
     return html;
 }
@@ -31,7 +55,11 @@ function createFilesHtml(data,id){
 function createFileElement(filedata){
     var newDiv = document.createElement('div');
     newDiv.className = 'file-item';
-    newDiv.innerHTML = filesHtml(filedata)
+    if(filedata.type.indexOf('image') == -1 ){
+       newDiv.innerHTML = filesHtml1(filedata)
+    }else{
+       newDiv.innerHTML = filesHtml2(filedata) 
+    }  
     return newDiv
 }
 
@@ -42,6 +70,7 @@ function treeHtml(data,treePid){
 	if(!childs)return; 
     var Html = '<ul>';
     childs.forEach(function(item){
+        console.log(item)
 		//获取到当前数据的层级 通过id获取	
 		var level = dataControl.getLevelById(data,item.id)
 		//判断当前这个数据有没有子数据 通过id判断
@@ -51,10 +80,10 @@ function treeHtml(data,treePid){
         Html += `
 
 		        <li>
-		            <div class="tree-title  ${hasChild}" data-file-id=${item.id} style="padding-left:${level*12}px"">
+		            <div class="tree-title  ${hasChild} ${item.url&&'isPic'}" data-file-id=${item.id} style="padding-left:${level*12}px"">
 		                <span>
-		                    <strong class="ellipsis">${item.title}</strong>
-		                    <i class="ico"></i>
+		                    <strong class="ellipsis" style="background:${item.url&&'#fff'};padding-left:${item.url&& 0}px"> ${item.url?'PICTURE-   ':''}${item.title}</strong>
+		                    <i class="ico" style="display:${item.url&&'none'}"></i>
 		                </span>
 		            </div>
                     ${treeHtml(data,item.id)}
