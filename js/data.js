@@ -57,22 +57,26 @@ var data = {
 		{
 			id:9000,
 			pid:3000,
-			title:"js初级课程"
+			title:"js初级课程",
+			type:"file"
 		},
 		{
 			id:8000,
 			pid:3000,
-			title:"js初级课程"
+			title:"js初级课程",
+			type:"file"
 		},
 		{
 			id:984744,
 			pid:3000,
-			title:"js中级课程"
+			title:"js中级课程",
+			type:"file"
 		},
 		{
 			id:920485,
 			pid:3000,
-			title:"js高级课程"
+			title:"js高级课程",
+			type:"file"
 		}
 	]
 }
