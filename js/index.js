@@ -43,7 +43,7 @@
 
 			//找到div身上的id 
 			//console.dir(target);
-
+            if(tools.hasClass(target,'isPic'))return;
 			var fileId = target.dataset.fileId;
 			
 			var xrDOM = new RenderNavFilesTree(fileId);
@@ -69,7 +69,7 @@
 
 			//找到div身上的id 
 			//console.dir(target);
-
+            if(tools.hasClass(target,'isPic'))return;
 			var fileId = target.dataset.fileId;
 			console.log(fileId)
 			var xrDOM = new RenderNavFilesTree(fileId);
@@ -99,51 +99,58 @@
 		this.treeNav = tools.$(".tree-nav",treeMenu)[0];	  
         tools.removeClass(this.treeNav,'tree-nav')
 	    //定位到属性菜单的上
-		positionTreeById(fileId)  	         
+		positionTreeById(fileId)  
+		mouseZZ()	         
     }
       
     /*页面交互*/
-
+  		var fileItem = tools.$(".file-item",fileList);
+		var checkboxs = tools.$(".checkbox",fileList);  
 	//找到文件区域下所有的文件
-	var fileItem = tools.$(".file-item",fileList);
-	var checkboxs = tools.$(".checkbox",fileList);
+    function mouseZZ(){
+		fileItem = tools.$(".file-item",fileList);
+		checkboxs = tools.$(".checkbox",fileList);
+	    
+		tools.each(fileItem,function(item,index){
+			console.log(item)
+			var checkbox = tools.$(".checkbox",item)[0];
+			tools.addEvent(item,"mouseenter",function(ev){
+				var target = ev.target;
 
-	tools.each(fileItem,function(item,index){
-		var checkbox = tools.$(".checkbox",item)[0];
-		tools.addEvent(item,"mouseenter",function(ev){
-			var target = ev.target;
+				tools.addClass(target,"file-checked");
+			});	
+			tools.addEvent(item,"mouseleave",function(ev){
+				if( !tools.hasClass(checkbox,"checked") ){
+					tools.removeClass(this,"file-checked");
+				}
+			});	
+			//给checkbox添加点击处理
 
-			tools.addClass(target,"file-checked");
-		});	
-		tools.addEvent(item,"mouseleave",function(ev){
-			if( !tools.hasClass(checkbox,"checked") ){
-				tools.removeClass(this,"file-checked");
-			}
-		});	
-		//给checkbox添加点击处理
+			tools.addEvent(checkbox,"click",function(ev){
+				var isaddClass = tools.toggleClass(this,"checked");
 
-		tools.addEvent(checkbox,"click",function(ev){
-			var isaddClass = tools.toggleClass(this,"checked");
-
-			if( isaddClass ){
-				//判断一下是否所有的checkbox是都都勾选了
+				if( isaddClass ){
+					//判断一下是否所有的checkbox是都都勾选了
 
 
-				if( whoSelect().length == checkboxs.length ){
-					tools.addClass(item,"file-checked");
-					tools.addClass(checkedAll,"checked");
+					if( whoSelect().length == checkboxs.length ){
+						tools.addClass(item,"file-checked");
+						tools.addClass(checkedAll,"checked");
+					}
+
+				}else{
+					//只要当前这个checkbox没有被勾选，那么肯定全选按钮就没有class为checked
+					tools.removeClass(item,"file-checked");
+					tools.removeClass(checkedAll,"checked");
 				}
 
-			}else{
-				//只要当前这个checkbox没有被勾选，那么肯定全选按钮就没有class为checked
-				tools.removeClass(item,"file-checked");
-				tools.removeClass(checkedAll,"checked");
-			}
+				//阻止冒泡，目的：防止触发fileList上的点击
+				ev.stopPropagation();
+			})					
+		})    	
+    }
 
-			//阻止冒泡，目的：防止触发fileList上的点击
-			ev.stopPropagation();
-		})					
-	})
+    mouseZZ()
 
 	//获取到全选按钮
 	var checkedAll = tools.$(".checked-all")[0];
@@ -193,6 +200,7 @@
 		empty.style.display = 'none'
 		var newFile = createFileElement({
 			title:"",
+			type : 'file',
 			id : new Date().getTime()			
 		})
 		var currentPath = tools.$(".current-path")[0];
@@ -253,7 +261,7 @@
         pageY = ev.clientY;
         tools.addEvent(document,'mousemove',fnMove)
         tools.addEvent(document,'mouseup',fnUp)
-        //ev.preventDefault();
+
      })
      
      function fnMove(ev){
@@ -302,6 +310,7 @@
 				}            	
             })
             ev.preventDefault();
+
         }
      }
      function fnUp(ev){
@@ -310,4 +319,96 @@
         if(newDiv) newDiv.style.display = "none";
      }
 
+     //更换头像
+     var inputUpload = tools.$('#input_upload');
+     tools.addEvent(inputUpload,'change',function(){
+     	var fd = new FileReader();
+     	fd.readAsDataURL(this.files[0])
+     	fd.onload = function(){
+           inputUpload.parentNode.parentNode.children[0].children[0].src = this.result;
+     	}
+     })
+
+     //拖拽上传图片
+     tools.addEvent(fileList,'dragenter',function(){
+     	var addPic = tools.$(".full-tip-box2")[0];	
+        addPic.style.bottom = 0;
+
+     })
+     tools.addEvent(fileList,'dragover',function(ev){
+     	ev.preventDefault();
+     })     
+     tools.addEvent(fileList,'dragleave',function(ev){
+     	var addPic = tools.$(".full-tip-box2")[0];	
+     	addPic.style.bottom = '-100px';
+     })       
+     tools.addEvent(fileList,'drop',function(ev){
+	    var addPic = tools.$(".full-tip-box2")[0];	
+        addPic.style.bottom = '-100px';
+        ev.preventDefault()
+        var dropType = ev.dataTransfer.files[0].type;
+        var dropName = ev.dataTransfer.files[0].name;
+        var dropURL = '';
+        var fReade = new FileReader();
+        fReade.readAsDataURL(ev.dataTransfer.files[0]);
+        fReade.onload = function(){
+        	dropURL = this.result;
+			empty = tools.$(".g-empty")[0];  //没有文件提醒的结构
+			empty.style.display = 'none'
+			var newFile = createFileElement({
+				type : dropType,
+				title: dropName,
+				id : new Date().getTime(),
+				url : dropURL			
+			})
+			var currentPath = tools.$(".current-path")[0];
+			var fileTitle = tools.$(".file-title",newFile)[0];
+			var fileEdtor = tools.$(".file-edtor",newFile)[0];
+			var item = tools.$(".item",newFile)[0];		
+	        var fullTipBox = tools.$(".full-tip-box")[0];	
+			fileList.insertBefore(newFile,fileList.firstElementChild);
+
+			
+			fileTitle.style.display = 'none';
+			fileEdtor.style.display = 'block';
+			fileEdtor.children[0].focus()
+			fileEdtor.children[0].select();
+        
+
+			tools.addEvent(fileEdtor.children[0],'blur',function(){
+				if(fileEdtor.children[0].value == ''){
+					fileList.removeChild(fileList.firstElementChild);
+				}else{
+					fileTitle.innerHTML = fileEdtor.children[0].value;
+					fileTitle.style.display = 'block';
+					fileEdtor.style.display = 'none';	
+					datas.push({
+						title:fileEdtor.children[0].value,
+						id : item.dataset.fileId,
+						pid : currentPath.dataset.fileId,
+						type : dropType,
+						url : dropURL
+					})	
+				    //tree-menu 容器
+				    var xrDOM = new RenderNavFilesTree(currentPath.dataset.fileId); 
+				    treeMenu.innerHTML = treeHtml(datas,-1) 
+				    positionTreeById(currentPath.dataset.fileId)    
+
+
+				    fullTipBox.style.top = 0;      
+				    fullTipBox.children[0].style.background = '#75bc0f'  
+				    fullTipBox.children[0].children[0].children[0].style.backgroundPosition = '0 -9px'  	
+	      
+	 	            setTimeout(function(){
+	                    fullTipBox.style.top = "-32px";	
+				    },1000)  
+				}
+			})
+		}
+	    setTimeout(function(){
+            isCreate = false;
+	    },1000)           
+     })  
+
+     /*重命名*/   
 }())
